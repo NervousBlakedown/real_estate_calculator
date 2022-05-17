@@ -1,5 +1,4 @@
 # Real Estate Calculator.
-# https://medium.com/towards-artificial-intelligence/mortgage-calculator-python-code-94d976d25a27
 # import matplotlib.pyplot as plt
 # import pandas as pd
 # import seaborn as sb
