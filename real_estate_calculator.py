@@ -75,7 +75,7 @@ print("Yearly HOA amount: " + str('$') + str(yearly_hoa))
 print("Yearly property tax amount: " + str('$') + str(yearly_property_tax))
 print("Closing cost: " + str('$') + str(closing_cost)) # avg. est. 4% of house cost
 
-print("") # line break. "\n" does double-space.
+print()
 print("Happy House Hunting.")
 
 # print("\n")
