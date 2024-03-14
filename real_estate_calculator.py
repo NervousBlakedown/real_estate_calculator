@@ -1,92 +1,65 @@
 # Real Estate Calculator.
-# import matplotlib.pyplot as plt
-# import pandas as pd
-# import seaborn as sb
 import numpy as np
-print("\n")
 
-print("Thanks for using Blake's Real Estate Calculator.")
-print("")
+def get_float_input(prompt, min_value=None):
+    while True:
+        try:
+            value = float(input(prompt))
+            if min_value is not None and value < min_value:
+                print(f"Please enter a value greater than {min_value}.")
+            else:
+                return value
+        except ValueError:
+            print("Invalid input. Please enter a numeric value.")
 
-sales_price = float(input("Enter sales price of house in US dollars (without commas), then hit the return key: "))
-down_payment =  float(input("Enter down payment as a percentage of Sales Price, e.g. '5' for 5%, then hit the return key: "))
-down_payment_dollars = down_payment * (sales_price / 100)
+def calculate_monthly_mortgage_payment(principal, annual_interest_rate, loan_term_months):
+    monthly_interest_rate = (annual_interest_rate / 100) / 12
+    mortgage_payment = principal * (monthly_interest_rate * (1 + monthly_interest_rate) ** loan_term_months) / ((1 + monthly_interest_rate) ** loan_term_months - 1)
+    return mortgage_payment
 
-remaining_loan_amount = sales_price * (1 - down_payment / 100)
-pmi_rate = (0.01 * remaining_loan_amount) / 12 # 1%; average pmi rate ranges from .55% to 2.25%; median is 1.2%
+def calculate_pmi(loan_amount, down_payment_percentage, pmi_rate):
+    if down_payment_percentage < 20:
+        return (pmi_rate / 100) * loan_amount / 12  # PMI rate as a percentage
+    return 0
 
-Loan_Amount = sales_price*(1-down_payment/100)
-Mortgage_Type =  float(input("Enter mortgage length in years, e.g. '15' for 15 years, then hit the return key: "))
+print("\nThanks for using Blake's Real Estate Calculator.\n")
 
-Loan_Term = int(12 * Mortgage_Type)
-yearly_loan_term = Loan_Term / 12
+# Input Section with Validation
+sales_price = get_float_input("Enter sales price of house in US dollars: ", 0)
+down_payment_percentage = get_float_input("Enter down payment as a percentage of sales price: ", 0)
+mortgage_years = get_float_input("Enter mortgage length in years: ", 0)
+annual_interest_rate = get_float_input("Enter loan interest rate as a percentage: ", 0)
+monthly_utilities = get_float_input("Enter estimated monthly utilities amount: ", 0)
+monthly_insurance = get_float_input("Enter monthly homeowner insurance amount: ", 0)
+monthly_hoa_fees = get_float_input("Enter monthly HOA amount: ", 0)
+property_tax_rate = get_float_input("Enter your county's property tax rate as a percentage: ", 0)
+pmi_rate_input = get_float_input("Enter PMI rate as a percentage (default is 1%): ", 0)
 
-Interest_Rate =  float(input("Enter loan interest rate as a percentage, e.g. '4' for 4%, then hit the return key: "))
-R = 1 +(Interest_Rate)/(12*100)
-X = Loan_Amount*(R**Loan_Term)*(1-R)/(1-R**Loan_Term)
+# Calculation Section
+down_payment_amount = sales_price * (down_payment_percentage / 100)
+loan_amount = sales_price - down_payment_amount
+loan_term_months = int(12 * mortgage_years)
 
-utilities = float(input("Enter estimated monthly utilities amount: "))
+monthly_mortgage_payment = calculate_monthly_mortgage_payment(loan_amount, annual_interest_rate, loan_term_months)
+pmi_amount = calculate_pmi(loan_amount, down_payment_percentage, pmi_rate_input)
 
-homeowner_insurance = float(input("Enter monthly homeowner insurance amount: "))
-hoa = float(input("Enter monthly HOA amount: "))
+yearly_property_tax_amount = (property_tax_rate / 100) * sales_price
+closing_costs = 0.04 * sales_price  # Assuming 4% closing costs
 
-property_tax = float(input("Enter your county's property tax rate, e.g. '3' for 3%, then hit the return key: "))
-yearly_property_tax = property_tax * (sales_price / 100)
-
-yearly_homeowner_insurance = homeowner_insurance * 12
-yearly_hoa = hoa * 12
-
-closing_cost = .04 * sales_price
-
-Monthly_Interest = []
-Monthly_Balance  = []
-
-for i in range(1, Loan_Term + 1):
-    Interest = Loan_Amount * (R - 1)
-    Loan_Amount = Loan_Amount - (X - Interest)
-    Monthly_Interest = np.append(Monthly_Interest, Interest)
-    Monthly_Balance = np.append(Monthly_Balance, Loan_Amount)
-
-# Print those sweet, sweet outputs.
-print("\n")
-
-print("House price: " + str('$')+ str(sales_price))
-print("Down payment: " + str(down_payment) + str('%') + ", or " + str('$') + str(down_payment_dollars))
-print("Loan length: " + str(Loan_Term)+str(' months') + ", or " + str(yearly_loan_term) + " years")
-print("Interest rate on the annual percentage basis: " + str(Interest_Rate)+str('%'))
-print("Remaining loan amount: " + str('$') + str(sales_price*(1-down_payment/100)))
-print("Total interest paid over life cycle of loan: " + str('$') + str(np.round(np.sum(Monthly_Interest), 0)))
-
-print("") # print() or print("") does a single space instead of a double space.
-print("Monthly mortgage payment (P & I): " + str('$')+str(np.round(X, 0)))
-print("Est. avg. monthly utilites amount: " + str('$') + str(utilities))
-print("Monthly homeowner insurance amount: " + str('$') + str(homeowner_insurance))
-print("Monthly HOA amount: " + str('$') + str(hoa))
-
-if down_payment < 20:
-    print("Est. monthly PMI amount at 1% rate (required if down payment < 20%): " + str('$') + str((np.round(np.sum(pmi_rate), 0))))
+# Output Section
+print(f"\nHouse price: ${sales_price}")
+print(f"Down payment: {down_payment_percentage}% or ${down_payment_amount}")
+print(f"Loan amount: ${loan_amount}")
+print(f"Loan term: {loan_term_months} months or {mortgage_years} years")
+print(f"Interest rate: {annual_interest_rate}%")
+print(f"Monthly mortgage payment (P&I): ${round(monthly_mortgage_payment, 2)}")
+if pmi_amount > 0:
+    print(f"Estimated monthly PMI amount (required if down payment < 20%): ${round(pmi_amount, 2)}")
 else:
-    print("You owe no PMI since your down payment is twenty percent or greater. Congrats!")
-# print("Your monthly PMI amount (required if down payment < 20%) is " + str('$') + str(pmi_rate * (remaining_loan_amount / 12)))
-
-print("")
-print("Yearly homeowner insurance amount: " + str('$') + str(yearly_homeowner_insurance))
-print("Yearly HOA amount: " + str('$') + str(yearly_hoa))
-print("Yearly property tax amount: " + str('$') + str(yearly_property_tax))
-print("Closing cost: " + str('$') + str(closing_cost)) # avg. est. 4% of house cost
-
-print()
+    print("No PMI required (down payment >= 20%).")
+print(f"Estimated average monthly utilities: ${monthly_utilities}")
+print(f"Monthly homeowner insurance: ${monthly_insurance}")
+print(f"Monthly HOA fees: ${monthly_hoa_fees}")
+print(f"Yearly property tax: ${yearly_property_tax_amount}")
+print(f"Estimated closing costs: ${closing_costs}\n")
 print("Happy House Hunting.")
-
-# print("\n")
-# print("Your total amount for each month on this house is " + str('$') + str(yearly_hoa) + str(yearly_property_tax))
-# Visualization if you'd like
-# plt.plot(range(1,Loan_Term+1),Monthly_Interest, 'r',lw=2)
-# plt.xlabel('month')
-# plt.ylabel('monthly interest ($)')
-# plt.show()
-#
-# plt.plot(range(1,Loan_Term+1),Monthly_Balance,'b',lw=2)
-# plt.xlabel('month')
-# plt.ylabel('monthly loan balance ($)')
-# plt.show()
